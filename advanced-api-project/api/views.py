@@ -1,15 +1,16 @@
-from rest_framework import generics, permissions, filters
+from rest_framework import generics, filters
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Book
 from .serializers import BookSerializer
 
-# List all books (read-only)
+
+# LIST + SEARCH + FILTER + ORDER
 class BookListView(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
-    # Filtering, searching, ordering
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["title", "author__name", "publication_year"]
     search_fields = ["title", "author__name"]
@@ -17,29 +18,37 @@ class BookListView(generics.ListAPIView):
     ordering = ["title"]
 
 
-# Retrieve single book
+# RETRIEVE SINGLE BOOK
 class BookDetailView(generics.RetrieveAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-# Create a new book
+# CREATE BOOK
 class BookCreateView(generics.CreateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
-# Update a book
+# UPDATE BOOK USING ?id=
 class BookUpdateView(generics.UpdateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        book_id = self.request.query_params.get("id")
+        return Book.objects.get(pk=book_id)
 
 
-# Delete a book
+# DELETE BOOK USING ?id=
 class BookDeleteView(generics.DestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        book_id = self.request.query_params.get("id")
+        return Book.objects.get(pk=book_id)
