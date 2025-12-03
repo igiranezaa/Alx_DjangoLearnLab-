@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Your Profile</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div>
+        <label for="{{ form.first_name.id_for_label }}">First name:</label>
+        {{ form.first_name }}
+        {{ form.first_name.errors }}
+    </div>
+
+    <div>
+        <label for="{{ form.last_name.id_for_label }}">Last name:</label>
+        {{ form.last_name }}
+        {{ form.last_name.errors }}
+    </div>
+
+    <div>
+        <label for="{{ form.email.id_for_label }}">Email:</label>
+        {{ form.email }}
+        {{ form.email.errors }}
+    </div>
+
+    <button type="submit">Save changes</button>
+</form>
+{% endblock %}
