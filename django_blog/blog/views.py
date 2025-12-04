@@ -12,7 +12,7 @@ from .forms import RegistrationForm, ProfileForm, PostForm, CommentForm
 
 
 # =====================================================
-# TASK 0 → LIST VIEW + SEARCH (Updated in Task 4)
+# TASK 0 → LIST VIEW + SEARCH
 # =====================================================
 
 class PostListView(ListView):
@@ -107,7 +107,53 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 # =====================================================
-# TASK 3 → COMMENT SYSTEM (add, edit, delete)
+# TASK 3 → REQUIRED CLASS-BASED COMMENT VIEWS (ALX CHECKER)
+# =====================================================
+
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = 'blog/comment_form.html'
+
+    def form_valid(self, form):
+        post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        form.instance.author = self.request.user
+        form.instance.post = post
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("post-detail", kwargs={'pk': self.kwargs['pk']})
+
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = 'blog/comment_form.html'
+    pk_url_kwarg = 'comment_id'
+
+    def test_func(self):
+        comment = self.get_object()
+        return comment.author == self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy("post-detail", kwargs={'pk': self.kwargs['pk']})
+
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
+    template_name = 'blog/comment_confirm_delete.html'
+    pk_url_kwarg = 'comment_id'
+
+    def test_func(self):
+        comment = self.get_object()
+        return comment.author == self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy("post-detail", kwargs={'pk': self.kwargs['pk']})
+
+
+# =====================================================
+# TASK 3 → FUNCTION-BASED COMMENT VIEWS (still needed)
 # =====================================================
 
 @login_required
