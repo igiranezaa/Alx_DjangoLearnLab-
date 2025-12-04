@@ -9,17 +9,17 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('profile/', views.profile_view, name='profile'),
 
-    # POSTS (CRUD)
+    # POSTS (CRUD) — ALX REQUIRED URL PATTERNS
     path('', views.PostListView.as_view(), name='home'),
-    path('posts/new/', views.PostCreateView.as_view(), name='post-new'),
-    path('posts/<int:pk>/', views.post_detail, name='post-detail'),
-    path('posts/<int:pk>/update/', views.PostUpdateView.as_view(), name='post-update'),
-    path('posts/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post-delete'),
+    path('post/new/', views.PostCreateView.as_view(), name='post-new'),
+    path('post/<int:pk>/', views.post_detail, name='post-detail'),
+    path('post/<int:pk>/update/', views.PostUpdateView.as_view(), name='post-update'),
+    path('post/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post-delete'),
 
     # COMMENTS
-    path('posts/<int:pk>/comments/add/', views.add_comment, name='add-comment'),
-    path('posts/<int:pk>/comments/<int:comment_id>/edit/', views.edit_comment, name='edit-comment'),
-    path('posts/<int:pk>/comments/<int:comment_id>/delete/', views.delete_comment, name='delete-comment'),
+    path('post/<int:pk>/comments/add/', views.add_comment, name='add-comment'),
+    path('post/<int:pk>/comments/<int:comment_id>/edit/', views.edit_comment, name='edit-comment'),
+    path('post/<int:pk>/comments/<int:comment_id>/delete/', views.delete_comment, name='delete-comment'),
 
     # TAGS
     path('tags/<str:tag_name>/', views.posts_by_tag, name='posts-by-tag'),
