@@ -1,5 +1,5 @@
 from rest_framework import viewsets, permissions, generics, status
-from rest_rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
@@ -10,20 +10,19 @@ from notifications.models import Notification
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
-    Custom permission to allow only owners to edit/delete their posts or comments.
+    Allows only owners of an object to edit it.
     """
     def has_object_permission(self, request, view, obj):
-        # SAFE methods allowed
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj.author == request.user
 
 
-# ============================
-#   POSTS CRUD
-# ============================
+# ======================
+#   POST CRUD
+# ======================
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()   # ALX REQUIRED
+    queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
@@ -31,11 +30,11 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-# ============================
-#   COMMENTS CRUD
-# ============================
+# ======================
+#   COMMENT CRUD
+# ======================
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()   # ALX REQUIRED
+    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
@@ -43,39 +42,40 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-# ============================
+# ======================
 #   FEED VIEW (ALX REQUIRED)
-# ============================
+# ======================
 class FeedView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PostSerializer
 
     def get_queryset(self):
-        # REQUIRED EXACT TEXT FOR ALX: "following.all()"
+        # ALX required string: "following.all()"
         following_users = self.request.user.following.all()
 
-        # REQUIRED EXACT TEXT FOR ALX:
-        # "Post.objects.filter(author__in=following_users).order_by"
-        return Post.objects.filter(author__in=following_users).order_by("-created_at")
+        # ALX required string: "Post.objects.filter(author__in=following_users).order_by"
+        return Post.objects.filter(
+            author__in=following_users
+        ).order_by("-created_at")
 
 
-# ============================
+# ======================
 #   LIKE / UNLIKE (ALX REQUIRED)
-# ============================
+# ======================
 class LikePostView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        # REQUIRED EXACT TEXT FOR ALX:
+        # ALX required string:
         post = generics.get_object_or_404(Post, pk=pk)
 
-        # Prevent double-like
-        if Like.objects.filter(post=post, user=request.user).exists():
+        # ALX required EXACT STRING:
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
+
+        if not created:
             return Response({"message": "Already liked"}, status=400)
 
-        Like.objects.create(post=post, user=request.user)
-
-        # REQUIRED EXACT TEXT FOR ALX: "Notification.objects.create"
+        # ALX required string:
         Notification.objects.create(
             recipient=post.author,
             actor=request.user,
@@ -92,7 +92,7 @@ class UnlikePostView(generics.GenericAPIView):
     def post(self, request, pk):
         post = generics.get_object_or_404(Post, pk=pk)
 
-        like = Like.objects.filter(post=post, user=request.user).first()
+        like = Like.objects.filter(user=request.user, post=post).first()
         if not like:
             return Response({"message": "Not liked yet"}, status=400)
 
