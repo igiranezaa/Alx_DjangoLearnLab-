@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, generics
 from rest_framework.permissions import IsAuthenticated
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
@@ -32,3 +32,19 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+
+# ============================
+#   FEED VIEW (ALX REQUIRED)
+# ============================
+class FeedView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        # REQUIRED EXACT TEXT: "following.all()"
+        following_users = self.request.user.following.all()
+        
+        # REQUIRED EXACT TEXT:
+        # "Post.objects.filter(author__in=following_users).order_by"
+        return Post.objects.filter(author__in=following_users).order_by("-created_at")
