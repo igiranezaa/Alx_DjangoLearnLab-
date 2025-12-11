@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from django.contrib.auth import authenticate
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
+from rest_framework.authtoken.models import Token   # ALX REQUIRED
 
 User = get_user_model()
 
@@ -20,11 +20,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
 
-        # Optional extra fields
+        # Optional fields
         user.bio = validated_data.get('bio', '')
         user.profile_picture = validated_data.get('profile_picture', None)
 
         user.save()
+
+        # ALX requires token creation:
+        Token.objects.create(user=user)
+
         return user
 
 
@@ -37,9 +41,9 @@ class UserLoginSerializer(serializers.Serializer):
         password = attrs.get("password")
 
         user = authenticate(username=username, password=password)
-
         if not user:
             raise serializers.ValidationError("Invalid username or password")
+
         attrs["user"] = user
         return attrs
 
